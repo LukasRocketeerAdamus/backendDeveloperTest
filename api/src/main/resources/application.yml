@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: beDevTest
+  cache:
+    cache-names: routingGraph
+    caffeine:
+      spec: expireAfterWrite=1h,maximumSize=1
+  http:
+    clients:
+      connect-timeout: 3s
+      read-timeout: 5s
+
+routing:
+  data-url: https://raw.githubusercontent.com/mledoze/countries/master/countries.json
