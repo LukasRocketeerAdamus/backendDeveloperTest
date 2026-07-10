@@ -1,8 +1,10 @@
 package com.prorocketeers.lukas.routing.service.impl;
 
-import com.prorocketeers.lukas.routing.service.IPathFinder;
+import com.prorocketeers.lukas.routing.service.PathFinder;
 import com.prorocketeers.lukas.routing.service.exception.CountryNotFoundException;
+import com.prorocketeers.lukas.routing.service.exception.InvalidCountryCodeException;
 import com.prorocketeers.lukas.routing.service.exception.RouteNotFoundException;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayDeque;
@@ -15,13 +17,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Finds the shortest path (fewest border crossings) between two countries via BFS —
  * the graph is unweighted, so BFS already yields the shortest path.
  */
 @Component
-public class ShortestPathFinder implements IPathFinder {
+public class ShortestPathFinder implements PathFinder {
+
+    private static final Pattern ISO_3166_ALPHA_3 = Pattern.compile("[A-Za-z]{3}");
 
     private final RoutingGraphProvider routingGraphProvider;
 
@@ -31,41 +36,32 @@ public class ShortestPathFinder implements IPathFinder {
 
     @Override
     public List<String> findPath(String origin, String destination) {
-        Map<String, GraphNode> nodesById = routingGraphProvider.getGraph();
+        var nodesById = routingGraphProvider.getGraph();
 
-        // Locale.ROOT, not the platform default: under a Turkish/Azerbaijani default locale,
-        // "fin".toUpperCase() yields "FİN" (dotted İ), not "FIN", which would wrongly reject valid codes.
-        String originId = origin.toUpperCase(Locale.ROOT);
-        String destinationId = destination.toUpperCase(Locale.ROOT);
-
-        if (!nodesById.containsKey(originId)) {
-            throw new CountryNotFoundException(originId);
-        }
-        if (!nodesById.containsKey(destinationId)) {
-            throw new CountryNotFoundException(destinationId);
-        }
+        var originId = validateCca3Code(origin, nodesById);
+        var destinationId = validateCca3Code(destination, nodesById);
 
         if (originId.equals(destinationId)) {
             return List.of(originId);
         }
 
-        Map<String, String> predecessors = new HashMap<>();
-        Set<String> visited = new HashSet<>();
-        Queue<String> queue = new ArrayDeque<>();
+        var predecessors = new HashMap<String, String>();
+        var visited = new HashSet<String>();
+        var queue = new ArrayDeque<String>();
         queue.add(originId);
         visited.add(originId);
 
         while (!queue.isEmpty()) {
-            String current = queue.poll();
+            var current = queue.poll();
             if (current.equals(destinationId)) {
                 return buildPath(predecessors, originId, destinationId);
             }
 
-            GraphNode node = nodesById.get(current);
+            var node = nodesById.get(current);
             if (node == null) {
                 continue;
             }
-            for (String neighbor : node.neighbors()) {
+            for (var neighbor : node.neighbors()) {
                 if (visited.add(neighbor)) {
                     predecessors.put(neighbor, current);
                     queue.add(neighbor);
@@ -76,9 +72,21 @@ public class ShortestPathFinder implements IPathFinder {
         throw new RouteNotFoundException(originId, destinationId);
     }
 
+    private static @NonNull String validateCca3Code(String code, Map<String, GraphNode> nodesById) {
+        if (!ISO_3166_ALPHA_3.matcher(code).matches()) {
+            throw new InvalidCountryCodeException(code);
+        }
+
+        var id = code.toUpperCase(Locale.ROOT);
+        if (!nodesById.containsKey(id)) {
+            throw new CountryNotFoundException(id);
+        }
+        return id;
+    }
+
     private List<String> buildPath(Map<String, String> predecessors, String origin, String destination) {
-        List<String> path = new ArrayList<>();
-        String current = destination;
+        var path = new ArrayList<String>();
+        var current = destination;
         while (!current.equals(origin)) {
             path.add(current);
             current = predecessors.get(current);

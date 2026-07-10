@@ -1,8 +1,8 @@
-package com.prorocketeers.lukas.routing.countryConnector;
+package com.prorocketeers.lukas.routing.country.connector;
 
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDtoMapper;
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDtoMapperImpl;
-import com.prorocketeers.lukas.routing.countryConnector.exception.CountryDataUnavailableException;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDtoMapper;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDtoMapperImpl;
+import com.prorocketeers.lukas.routing.country.connector.exception.CountryDataUnavailableException;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestClient;
 
@@ -14,7 +14,7 @@ class CountryDataConnectorTest {
 
     @Test
     void throwsWhenDataUrlIsBlank() {
-        CountryDataConnector client = new CountryDataConnector(RestClient.builder(), countryDtoMapper, "");
+        var client = new CountryDataConnector(RestClient.builder(), countryDtoMapper, "");
 
         assertThatThrownBy(client::fetchCountries)
                 .isInstanceOf(CountryDataUnavailableException.class);
@@ -23,7 +23,7 @@ class CountryDataConnectorTest {
     @Test
     void throwsWhenConnectionFails() {
         // port 1 is reserved/unassigned, so the connection is refused immediately.
-        CountryDataConnector client = new CountryDataConnector(RestClient.builder(), countryDtoMapper, "http://127.0.0.1:1/countries.json");
+        var client = new CountryDataConnector(RestClient.builder(), countryDtoMapper, "http://127.0.0.1:1/countries.json");
 
         assertThatThrownBy(client::fetchCountries)
                 .isInstanceOf(CountryDataUnavailableException.class);

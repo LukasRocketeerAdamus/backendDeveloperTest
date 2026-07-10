@@ -1,8 +1,9 @@
 package com.prorocketeers.lukas.routing.service;
 
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDto;
-import com.prorocketeers.lukas.routing.countryConnector.CountryDataConnector;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDto;
+import com.prorocketeers.lukas.routing.country.connector.CountryDataConnector;
 import com.prorocketeers.lukas.routing.service.exception.CountryNotFoundException;
+import com.prorocketeers.lukas.routing.service.exception.InvalidCountryCodeException;
 import com.prorocketeers.lukas.routing.service.exception.RouteNotFoundException;
 import com.prorocketeers.lukas.routing.service.impl.CountryGraphMapper;
 import com.prorocketeers.lukas.routing.service.impl.CountryGraphMapperImpl;
@@ -21,16 +22,16 @@ import static org.mockito.Mockito.mock;
 
 class ShortestPathFinderTest {
 
-    // A - B - C - D
-    //     |       |
-    //     E ------+
+    // AAA - BBB - CCC - DDD
+    //        |           |
+    //        EEE --------+
     private final List<CountryDto> countries = List.of(
-            new CountryDto("A", List.of("B")),
-            new CountryDto("B", List.of("A", "C", "E")),
-            new CountryDto("C", List.of("B", "D")),
-            new CountryDto("D", List.of("C", "E")),
-            new CountryDto("E", List.of("B", "D")),
-            new CountryDto("F", List.of())
+            new CountryDto("AAA", List.of("BBB")),
+            new CountryDto("BBB", List.of("AAA", "CCC", "EEE")),
+            new CountryDto("CCC", List.of("BBB", "DDD")),
+            new CountryDto("DDD", List.of("CCC", "EEE")),
+            new CountryDto("EEE", List.of("BBB", "DDD")),
+            new CountryDto("FFF", List.of())
     );
 
     private final CountryDataConnector countryDataConnector = mock(CountryDataConnector.class);
@@ -46,40 +47,52 @@ class ShortestPathFinderTest {
 
     @Test
     void findsShortestPathOverDirectShortcut() {
-        // A -> D via B -> E -> D (3 hops) is shorter than B -> C -> D (also 3 hops via A-B-C-D),
-        // BFS must return a shortest (not just any) path of minimal length.
-        List<String> path = shortestPathFinder.findPath("A", "D");
+        // AAA -> DDD via BBB -> EEE -> DDD (3 hops) is shorter than BBB -> CCC -> DDD (also 3 hops via
+        // AAA-BBB-CCC-DDD), BFS must return a shortest (not just any) path of minimal length.
+        var path = shortestPathFinder.findPath("AAA", "DDD");
 
         assertThat(path).hasSize(4);
-        assertThat(path.getFirst()).isEqualTo("A");
-        assertThat(path.getLast()).isEqualTo("D");
+        assertThat(path.getFirst()).isEqualTo("AAA");
+        assertThat(path.getLast()).isEqualTo("DDD");
     }
 
     @Test
     void returnsSingleElementPathWhenOriginEqualsDestination() {
-        assertThat(shortestPathFinder.findPath("A", "A")).containsExactly("A");
+        assertThat(shortestPathFinder.findPath("AAA", "AAA")).containsExactly("AAA");
     }
 
     @Test
     void isCaseInsensitive() {
-        assertThat(shortestPathFinder.findPath("a", "b")).containsExactly("A", "B");
+        assertThat(shortestPathFinder.findPath("aaa", "bbb")).containsExactly("AAA", "BBB");
+    }
+
+    @Test
+    void throwsInvalidCountryCodeExceptionForMalformedOrigin() {
+        assertThatThrownBy(() -> shortestPathFinder.findPath("A1", "AAA"))
+                .isInstanceOf(InvalidCountryCodeException.class);
+    }
+
+    @Test
+    void throwsInvalidCountryCodeExceptionForMalformedDestination() {
+        assertThatThrownBy(() -> shortestPathFinder.findPath("AAA", "TOOLONG"))
+                .isInstanceOf(InvalidCountryCodeException.class);
     }
 
     @Test
     void throwsCountryNotFoundExceptionForUnknownOrigin() {
-        assertThatThrownBy(() -> shortestPathFinder.findPath("ZZZ", "A"))
+        assertThatThrownBy(() -> shortestPathFinder.findPath("ZZZ", "AAA"))
                 .isInstanceOf(CountryNotFoundException.class);
     }
 
     @Test
     void throwsCountryNotFoundExceptionForUnknownDestination() {
-        assertThatThrownBy(() -> shortestPathFinder.findPath("A", "ZZZ"))
+        assertThatThrownBy(() -> shortestPathFinder.findPath("AAA", "ZZZ"))
                 .isInstanceOf(CountryNotFoundException.class);
     }
 
     @Test
     void throwsRouteNotFoundExceptionWhenNodesAreDisconnected() {
-        assertThatThrownBy(() -> shortestPathFinder.findPath("A", "F"))
+        assertThatThrownBy(() -> shortestPathFinder.findPath("AAA", "FFF"))
                 .isInstanceOf(RouteNotFoundException.class);
     }
 
@@ -88,12 +101,12 @@ class ShortestPathFinderTest {
         // Mirrors a real data quirk in the mledoze dataset: LKA lists IND as a border, but IND's own list
         // omits LKA back. The graph must be treated as undirected regardless of which side records the edge.
         given(countryDataConnector.fetchCountries()).willReturn(List.of(
-                new CountryDto("X", List.of("Y")),
-                new CountryDto("Y", List.of())
+                new CountryDto("XXX", List.of("YYY")),
+                new CountryDto("YYY", List.of())
         ));
 
-        assertThat(shortestPathFinder.findPath("X", "Y")).containsExactly("X", "Y");
-        assertThat(shortestPathFinder.findPath("Y", "X")).containsExactly("Y", "X");
+        assertThat(shortestPathFinder.findPath("XXX", "YYY")).containsExactly("XXX", "YYY");
+        assertThat(shortestPathFinder.findPath("YYY", "XXX")).containsExactly("YYY", "XXX");
     }
 
     @Test
@@ -102,7 +115,7 @@ class ShortestPathFinderTest {
         // "FİN" (dotted İ) instead of "FIN", which would wrongly reject this valid code.
         given(countryDataConnector.fetchCountries()).willReturn(List.of(new CountryDto("FIN", List.of())));
 
-        Locale previousLocale = Locale.getDefault();
+        var previousLocale = Locale.getDefault();
         try {
             Locale.setDefault(new Locale("tr", "TR"));
             assertThat(shortestPathFinder.findPath("fin", "fin")).containsExactly("FIN");

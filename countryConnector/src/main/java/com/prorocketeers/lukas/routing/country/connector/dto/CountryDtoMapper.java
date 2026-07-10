@@ -1,4 +1,4 @@
-package com.prorocketeers.lukas.routing.countryConnector.dto;
+package com.prorocketeers.lukas.routing.country.connector.dto;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -9,7 +9,6 @@ import java.util.List;
 public interface CountryDtoMapper {
 
     @Mapping(source = "cca3", target = "code")
-    @Mapping(source = "borders", target = "borders")
     CountryDto toCountryDto(CountryJsonDto raw);
 
     List<CountryDto> toCountryDtos(List<CountryJsonDto> raw);

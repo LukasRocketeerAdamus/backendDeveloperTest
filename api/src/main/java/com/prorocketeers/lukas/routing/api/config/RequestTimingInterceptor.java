@@ -26,8 +26,8 @@ class RequestTimingInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
                                  Exception ex) {
-        long startTime = (long) request.getAttribute(START_TIME_ATTRIBUTE);
-        long durationMs = System.currentTimeMillis() - startTime;
+        var startTime = (long) request.getAttribute(START_TIME_ATTRIBUTE);
+        var durationMs = System.currentTimeMillis() - startTime;
         log.info("{} {} -> {} ({} ms)", request.getMethod(), request.getRequestURI(), response.getStatus(),
                 durationMs);
     }

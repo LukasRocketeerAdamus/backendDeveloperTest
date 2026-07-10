@@ -1,4 +1,4 @@
-package com.prorocketeers.lukas.routing.countryConnector.dto;
+package com.prorocketeers.lukas.routing.country.connector.dto;
 
 import java.util.List;
 

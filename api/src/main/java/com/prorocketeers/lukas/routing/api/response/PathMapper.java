@@ -5,7 +5,7 @@ import org.mapstruct.Mapper;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface IPathMapper {
+public interface PathMapper {
 
     default RoutingResponse map(List<String> path) {
         return new RoutingResponse(path);

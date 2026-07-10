@@ -1,8 +1,8 @@
 package com.prorocketeers.lukas.routing.service.impl;
 
-import com.prorocketeers.lukas.routing.countryConnector.CountryDataConnector;
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDto;
-import com.prorocketeers.lukas.routing.countryConnector.exception.CountryDataUnavailableException;
+import com.prorocketeers.lukas.routing.country.connector.CountryDataConnector;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDto;
+import com.prorocketeers.lukas.routing.country.connector.exception.CountryDataUnavailableException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

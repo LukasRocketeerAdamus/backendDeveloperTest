@@ -1,6 +1,6 @@
 package com.prorocketeers.lukas.routing.service;
 
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDto;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDto;
 import com.prorocketeers.lukas.routing.service.impl.CountryGraphMapper;
 import com.prorocketeers.lukas.routing.service.impl.CountryGraphMapperImpl;
 import com.prorocketeers.lukas.routing.service.impl.GraphNode;
@@ -16,12 +16,12 @@ class CountryGraphMapperTest {
 
     @Test
     void mapsCodeToIdAndBordersToNeighbors() {
-        List<CountryDto> countries = List.of(
+        var countries = List.of(
                 new CountryDto("BEL", List.of("FRA", "DEU", "NLD")),
                 new CountryDto("ABW", List.of())
         );
 
-        List<GraphNode> nodes = countryGraphMapper.toGraphNodes(countries);
+        var nodes = countryGraphMapper.toGraphNodes(countries);
 
         assertThat(nodes).containsExactly(
                 new GraphNode("BEL", List.of("FRA", "DEU", "NLD")),

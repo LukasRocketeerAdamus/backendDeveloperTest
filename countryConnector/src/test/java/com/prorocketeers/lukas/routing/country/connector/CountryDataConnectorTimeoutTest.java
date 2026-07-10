@@ -1,7 +1,7 @@
-package com.prorocketeers.lukas.routing.countryConnector;
+package com.prorocketeers.lukas.routing.country.connector;
 
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDtoMapper;
-import com.prorocketeers.lukas.routing.countryConnector.exception.CountryDataUnavailableException;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDtoMapper;
+import com.prorocketeers.lukas.routing.country.connector.exception.CountryDataUnavailableException;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ class CountryDataConnectorTimeoutTest {
 
     @Test
     void fetchTimesOutInsteadOfHangingIndefinitelyOnASlowDataSource() throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/slow.json", exchange -> {
             try {
                 // far longer than spring.http.clients.read-timeout in application.yml, so the timeout
@@ -45,12 +45,12 @@ class CountryDataConnectorTimeoutTest {
         });
         server.start();
         try {
-            String slowDataUrl = "http://127.0.0.1:" + server.getAddress().getPort() + "/slow.json";
-            CountryDataConnector client = new CountryDataConnector(restClientBuilder, countryDtoMapper, slowDataUrl);
+            var slowDataUrl = "http://127.0.0.1:" + server.getAddress().getPort() + "/slow.json";
+            var client = new CountryDataConnector(restClientBuilder, countryDtoMapper, slowDataUrl);
 
-            long start = System.currentTimeMillis();
+            var start = System.currentTimeMillis();
             assertThatThrownBy(client::fetchCountries).isInstanceOf(CountryDataUnavailableException.class);
-            long elapsedMs = System.currentTimeMillis() - start;
+            var elapsedMs = System.currentTimeMillis() - start;
 
             // well below the endpoint's 30s sleep, proving the configured read-timeout aborted the request
             assertThat(elapsedMs).isLessThan(15_000);

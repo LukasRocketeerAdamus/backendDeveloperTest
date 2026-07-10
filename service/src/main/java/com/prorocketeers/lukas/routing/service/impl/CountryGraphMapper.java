@@ -1,6 +1,6 @@
 package com.prorocketeers.lukas.routing.service.impl;
 
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDto;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

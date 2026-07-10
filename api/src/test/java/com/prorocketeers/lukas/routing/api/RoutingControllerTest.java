@@ -1,9 +1,10 @@
 package com.prorocketeers.lukas.routing.api;
 
-import com.prorocketeers.lukas.routing.api.response.IPathMapper;
+import com.prorocketeers.lukas.routing.api.response.PathMapper;
 import com.prorocketeers.lukas.routing.api.response.RoutingResponse;
-import com.prorocketeers.lukas.routing.service.IPathFinder;
+import com.prorocketeers.lukas.routing.service.PathFinder;
 import com.prorocketeers.lukas.routing.service.exception.CountryNotFoundException;
+import com.prorocketeers.lukas.routing.service.exception.InvalidCountryCodeException;
 import com.prorocketeers.lukas.routing.service.exception.RouteNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +28,10 @@ class RoutingControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private IPathFinder pathFinder;
+    private PathFinder pathFinder;
 
     @MockitoBean
-    private IPathMapper pathMapper;
+    private PathMapper pathMapper;
 
     @Test
     void returnsShortestPath() throws Exception {
@@ -41,6 +42,16 @@ class RoutingControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.route[0]").value("BEL"))
                 .andExpect(jsonPath("$.route[1]").value("FRA"));
+    }
+
+    @Test
+    void returns400WhenCountryCodeMalformed() throws Exception {
+        given(pathFinder.findPath(anyString(), anyString()))
+                .willThrow(new InvalidCountryCodeException("B3L"));
+
+        mockMvc.perform(get("/routing/B3L/FRA"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Invalid country code: B3L (expected ISO 3166-1 alpha-3 format)"));
     }
 
     @Test

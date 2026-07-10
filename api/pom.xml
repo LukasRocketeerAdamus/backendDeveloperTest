@@ -19,6 +19,10 @@
         with spring-boot-maven-plugin). Depends on `service` for the business logic port (IPathFinder);
         never reaches into `data` directly.
     -->
+    <properties>
+        <org.springdoc.version>3.0.3</org.springdoc.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.prorocketeers</groupId>
@@ -29,6 +33,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${org.springdoc.version}</version>
         </dependency>
 
         <dependency>

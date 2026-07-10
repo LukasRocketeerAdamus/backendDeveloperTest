@@ -1,4 +1,4 @@
-package com.prorocketeers.lukas.routing.countryConnector;
+package com.prorocketeers.lukas.routing.country.connector;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

@@ -1,7 +1,7 @@
-package com.prorocketeers.lukas.routing.countryConnector.dto;
+package com.prorocketeers.lukas.routing.country.connector.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.prorocketeers.lukas.routing.countryConnector.CountryDataConnector;
+import com.prorocketeers.lukas.routing.country.connector.CountryDataConnector;
 
 import java.util.List;
 

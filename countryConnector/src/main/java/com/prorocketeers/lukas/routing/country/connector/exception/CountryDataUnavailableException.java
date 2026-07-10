@@ -1,4 +1,4 @@
-package com.prorocketeers.lukas.routing.countryConnector.exception;
+package com.prorocketeers.lukas.routing.country.connector.exception;
 
 public class CountryDataUnavailableException extends RuntimeException {
 

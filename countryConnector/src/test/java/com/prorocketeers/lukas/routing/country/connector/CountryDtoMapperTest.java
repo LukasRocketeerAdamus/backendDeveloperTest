@@ -1,9 +1,9 @@
-package com.prorocketeers.lukas.routing.countryConnector;
+package com.prorocketeers.lukas.routing.country.connector;
 
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDto;
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDtoMapper;
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryDtoMapperImpl;
-import com.prorocketeers.lukas.routing.countryConnector.dto.CountryJsonDto;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDto;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDtoMapper;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryDtoMapperImpl;
+import com.prorocketeers.lukas.routing.country.connector.dto.CountryJsonDto;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -16,7 +16,7 @@ class CountryDtoMapperTest {
 
     @Test
     void mapsCca3AndBorders() {
-        List<CountryDto> countries = countryDtoMapper.toCountryDtos(List.of(
+        var countries = countryDtoMapper.toCountryDtos(List.of(
                 new CountryJsonDto("BEL", List.of("FRA", "DEU", "NLD")),
                 new CountryJsonDto("ABW", List.of())
         ));

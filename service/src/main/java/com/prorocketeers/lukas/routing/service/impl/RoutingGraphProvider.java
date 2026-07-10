@@ -1,6 +1,6 @@
 package com.prorocketeers.lukas.routing.service.impl;
 
-import com.prorocketeers.lukas.routing.countryConnector.CountryDataConnector;
+import com.prorocketeers.lukas.routing.country.connector.CountryDataConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,7 +26,7 @@ import java.util.Set;
 @Component
 public class RoutingGraphProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(RoutingGraphProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RoutingGraphProvider.class);
 
     private final CountryDataConnector countryDataConnector;
     private final CountryGraphMapper countryGraphMapper;
@@ -40,20 +40,18 @@ public class RoutingGraphProvider {
     public Map<String, GraphNode> getGraph() {
         var nodes = countryGraphMapper.toGraphNodes(countryDataConnector.fetchCountries());
 
-        Map<String, Set<String>> neighborsById = new LinkedHashMap<>();
-        for (GraphNode node : nodes) {
+        var neighborsById = new LinkedHashMap<String, Set<String>>();
+        for (var node : nodes) {
             if (neighborsById.putIfAbsent(node.id(), new LinkedHashSet<>()) != null) {
-                log.warn("Duplicate country code {} in routing data source, keeping the first occurrence",
+                LOG.warn("Duplicate country code {} in routing data source, keeping the first occurrence",
                         node.id());
             }
         }
 
-        // The source data doesn't always list a border on both sides (e.g. LKA lists IND as a border, but
-        // IND's own list omits LKA), so edges are added in both directions here to make the graph
-        // undirected — otherwise BFS would find a route for one direction of a pair but not the other.
-        for (GraphNode node : nodes) {
-            for (String neighborId : node.neighbors()) {
-                Set<String> reverseNeighbors = neighborsById.get(neighborId);
+        // Sanitize data
+        for (var node : nodes) {
+            for (var neighborId : node.neighbors()) {
+                var reverseNeighbors = neighborsById.get(neighborId);
                 if (reverseNeighbors == null) {
                     continue;
                 }
@@ -62,7 +60,7 @@ public class RoutingGraphProvider {
             }
         }
 
-        Map<String, GraphNode> nodesById = new LinkedHashMap<>();
+        var nodesById = new LinkedHashMap<String, GraphNode>();
         neighborsById.forEach((id, neighbors) -> nodesById.put(id, new GraphNode(id, List.copyOf(neighbors))));
         return nodesById;
     }
